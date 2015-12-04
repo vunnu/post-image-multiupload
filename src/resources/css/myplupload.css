@@ -1,0 +1,40 @@
+.filelist {
+    width: 60%;
+}
+.filelist .file {
+    padding: 5px;
+    background: #ececec;
+    border: solid 1px #ccc;
+    margin-bottom: 4px;
+}
+.filelist .fileprogress {
+    width: 0%;
+    background: #B7C53D;
+    height: 5px;
+}
+.plupload-thumbs {
+}
+.images{
+    display: inline-block;
+}
+.plupload-thumbs .thumb {
+    width: 100px;
+    padding-right: 5px;
+    float: left;
+}
+.plupload-thumbs .thumb img {
+    width: 100px;
+    height: 100px;
+}
+.plupload-attach .thumb {
+    width: 100px;
+    padding-right: 5px;
+    float: left;
+}
+.plupload-attach .thumb img {
+    width: 100px;
+    height: 100px;
+}
+.ui-sortable  .thumb img {
+    cursor: pointer;
+}

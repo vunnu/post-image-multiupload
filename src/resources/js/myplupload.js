@@ -66,22 +66,36 @@ jQuery(document).ready(function($) {
 
 
                 $('#' + file.id).fadeOut();
-                response = response["response"]
+                var json = JSON.parse(response["response"]);
+
+                response = json.url;
+                var response_base = json.file;
                 // add url to the hidden field
                 if ($this.hasClass("plupload-upload-uic-multiple")) {
                     // multiple
                     var v1 = $.trim($("#" + imgId).val());
+                    var v2 = $.trim($("#" + imgId + "_base").val());
+
                     if (v1) {
                         v1 = v1 + "," + response;
                     } else {
                         v1 = response;
                     }
+
+                    if (v2) {
+                        v2 = v2 + "," + response_base;
+                    } else {
+                        v2 = response_base;
+                    }
+
                     $("#" + imgId).val(v1);
+                    $("#" + imgId + "_base").val(v2);
                 } else {
                     // single
                     $("#" + imgId).val(response + "");
+                    $("#" + imgId + "_base").val(response_base + "");
                 }
-                // show thumbs 
+                // show thumbs
                 plu_show_thumbs(imgId);
             });
         });

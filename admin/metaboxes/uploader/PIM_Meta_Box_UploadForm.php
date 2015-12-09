@@ -60,7 +60,7 @@ class PIM_Meta_Box_ProjectFields{
 
 
     function pim_admin_head() {
-    // place js config array for plupload
+        // place js config array for plupload
         $plupload_init = array(
             'runtimes' => 'html5,silverlight,flash,html4',
             'browse_button' => 'plupload-browse-button', // will be adjusted per uploader
@@ -100,7 +100,8 @@ class PIM_Meta_Box_ProjectFields{
         $status = wp_handle_upload($_FILES[$imgid . 'async-upload'], array('test_form' => true, 'action' => 'plupload_action'));
 
         // send the uploaded file url in response
-        echo $status['url'];
+//        echo $status['url'];
+        echo json_encode($status);
         exit;
     }
 
@@ -134,6 +135,7 @@ class PIM_Meta_Box_ProjectFields{
         <div class="row">
             <label>Upload Images</label>
             <input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $svalue; ?>" />
+            <input type="hidden" name="<?php echo $id; ?>_base" id="<?php echo $id; ?>_base" value="<?php echo $svalue; ?>" />
             <div class="plupload-upload-uic hide-if-no-js <?php if ($multiple): ?>plupload-upload-uic-multiple<?php endif; ?>" id="<?php echo $id; ?>plupload-upload-ui">
                 <input id="<?php echo $id; ?>plupload-browse-button" type="button" value="<?php esc_attr_e('Select Files'); ?>" class="button" />
                 <span class="ajaxnonceplu" id="ajaxnonceplu<?php echo wp_create_nonce($id . 'pluploadan'); ?>"></span>
@@ -161,7 +163,7 @@ class PIM_Meta_Box_ProjectFields{
         </div>
 
 
-    <?php
+        <?php
     }
 
     function meta_box_save($post_id)
@@ -174,9 +176,9 @@ class PIM_Meta_Box_ProjectFields{
                 $attachments = PIM_Gallery::get_list($post_id, true);
 
 
-                if(isset($_POST['pim_images']) && $_POST['pim_images'])
+                if(isset($_POST['pim_images_base']) && $_POST['pim_images_base'])
                 {
-                    $images = explode(',', $_POST['pim_images']);
+                    $images = explode(',', $_POST['pim_images_base']);
 
                     $i = 0;
                     foreach ($images as $image_path) {
@@ -184,7 +186,7 @@ class PIM_Meta_Box_ProjectFields{
                         $wp_upload_dir = wp_upload_dir();
 
                         $attachment = array(
-                            'guid'           => $wp_upload_dir['url'] . '/' . basename( $image_path ),
+                            'guid'           => basename( $image_path ),
                             'post_mime_type' => $filetype['type'],
                             'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $image_path ) ),
                             'post_content'   => 'pim_gallery',

@@ -17,46 +17,6 @@ class PIM_Gallery extends PIM_Base
 
     static $post_type = 'attachment';
 
-    private $article_main_color;
-
-    private $article_url;
-
-
-
-    /**
-     * @return mixed
-     */
-    public function get_article_url()
-    {
-        return $this->article_url;
-    }
-
-    /**
-     * @param mixed $article_url
-     */
-    public function set_article_url($article_url)
-    {
-        $this->article_url = $article_url;
-    }
-
-
-    /**
-     * @return mixed
-     */
-    public function get_article_mainColor()
-    {
-
-        return $this->article_main_color;
-    }
-
-    /**
-     * @param mixed $article_main_color
-     */
-    public function set_article_mainColor($article_main_color)
-    {
-
-        $this->article_main_color = $article_main_color;
-    }
 
 
     /**
@@ -65,8 +25,6 @@ class PIM_Gallery extends PIM_Base
     public function save()
     {
 
-        $this->save_meta_value('_ch_news_main_color', $this->get_article_mainColor());
-        $this->save_meta_value('_ch_news_url', $this->get_article_url());
     }
 
     /**
@@ -75,8 +33,6 @@ class PIM_Gallery extends PIM_Base
     public function init()
     {
 
-        $this->set_article_mainColor($this->get_meta_value('_ch_news_main_color'));
-        $this->set_article_url($this->get_meta_value('_ch_news_url'));
     }
 
 
@@ -173,4 +129,4 @@ class PIM_Gallery extends PIM_Base
     }
 }
 
-return CH_News::getInstance();
+return PIM_Gallery::getInstance();

@@ -16,18 +16,34 @@ class PIM_Functions{
         //First page functions
         add_filter('first_page_blocks', array( $this, 'pim_first_page_blocks'), 0, 0);
 
-        add_filter('pim_gallery_images', array( $this, 'pim_pim_images'), 0, 1);
+        add_filter('pim_gallery_images', array( $this, 'pim_pim_images'), 0, 2);
 
         add_filter('pim_image_url', array( $this, 'pim_pim_image_url'), 0, 2);
 
         add_filter('pim_gallery', array( $this, 'pim_pim_gallery'), 0, 1);
 
+        add_filter('attachment_fields_to_edit', array( $this, 'pim_edit_media_custom_field'), 11, 2 );
+
+        add_filter('attachment_fields_to_save', array( $this, 'pim_save_media_custom_field'), 11, 2 );
+
 
     }
 
 
+    public function pim_edit_media_custom_field( $form_fields, $post ) {
+        $form_fields['slide_link'] = array( 'label' => __('Slide link', 'pim'), 'input' => 'text', 'value' => get_post_meta( $post->ID, '_slide_link', true ) );
 
-    public function pim_pim_images($post_id)
+        unset($form_fields['location']);
+        return $form_fields;
+    }
+
+    public function pim_save_media_custom_field( $post, $attachment ) {
+        update_post_meta( $post['ID'], '_slide_link', $attachment['slide_link'] );
+        return $post;
+    }
+
+
+    public function pim_pim_images($post_id, $title_image = true)
     {
         $images = PIM_Gallery::get_list($post_id, true);
 
@@ -41,15 +57,21 @@ class PIM_Functions{
 
 
                 $retArr = array();
-                $retArr['title_image'] = $images[$key];
-                unset($images[$key]);
+
+                if($title_image)
+                {
+                    $retArr['title_image'] = $images[$key];
+                    unset($images[$key]);
+                }
 
                 foreach($images as $image)
                 {
                     $retArr['thumbs'][] = $image;
                 }
 
-                return $retArr;
+                if($title_image)
+                    return $retArr;
+                return $retArr['thumbs'];
             }
         }
 
@@ -58,9 +80,9 @@ class PIM_Functions{
 
     public function pim_pim_image_url($attachment_id, $size = 'small')
     {
-        $image = wp_get_attachment_url($attachment_id, $size);
+        $feat_image = wp_get_attachment_image_src( $attachment_id, $size );
 
-        return $image;
+        return $feat_image[0];
     }
 
 

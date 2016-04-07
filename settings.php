@@ -1,6 +1,7 @@
 <?php
 $pimorder_options = get_option('pimorder_options');
 $pimorder_objects = isset($pimorder_options['objects']) ? $pimorder_options['objects'] : array();
+$pimorder_objects_slide = isset($pimorder_options['objects_slide']) ? $pimorder_options['objects_slide'] : array();
 $pimorder_tags = isset($pimorder_options['tags']) ? $pimorder_options['tags'] : array();
 ?>
 
@@ -24,7 +25,7 @@ $pimorder_tags = isset($pimorder_options['tags']) ? $pimorder_options['tags'] : 
             <table class="form-table">
                 <tbody>
                     <tr valign="top">
-                        <th scope="row"><?php _e('Check to Sort Post Types', 'pimorder') ?></th> 
+                        <th scope="row"><?php _e('Check to enable Post Types', 'pimorder') ?></th>
                         <td>
                             <label><input type="checkbox" id="pimorder_allcheck_objects"> <?php _e('Check All', 'pimorder') ?></label><br>
                             <?php
@@ -52,41 +53,42 @@ $pimorder_tags = isset($pimorder_options['tags']) ? $pimorder_options['tags'] : 
                 </tbody>
             </table>
 
-        </div>
 
 
-        <div id="pimorder_select_tags">
             <table class="form-table">
                 <tbody>
-                    <tr valign="top">
-                        <th scope="row"><?php _e('Check to Sort Taxonomies', 'pimorder') ?></th> 
-                        <td>
-                            <label><input type="checkbox" id="pimorder_allcheck_tags"> <?php _e('Check All', 'pimorder') ?></label><br>
-                            <?php
-                            $taxonomies = get_taxonomies(array(
-                                'show_ui' => true,
-                                    ), 'objects');
+                <tr valign="top">
+                    <th scope="row"><?php _e('Check to enable Post Types as Slide with title and description', 'pimorder') ?></th>
+                    <td>
+                        <label><input type="checkbox" id="pimorder_allcheck_objects"> <?php _e('Check All', 'pimorder') ?></label><br>
+                        <?php
+                        $post_types = get_post_types(array(
+                            'show_ui' => true,
+                            'show_in_menu' => true,
+                        ), 'objects');
 
-                            foreach ($taxonomies as $taxonomy) {
-                                if ($taxonomy->name == 'post_format')
-                                    continue;
-                                ?>
-                                <label><input type="checkbox" name="tags[]" value="<?php echo $taxonomy->name; ?>" <?php
-                                    if (isset($pimorder_tags) && is_array($pimorder_tags)) {
-                                        if (in_array($taxonomy->name, $pimorder_tags)) {
-                                            echo 'checked="checked"';
-                                        }
+                        foreach ($post_types as $post_type) {
+                            if ($post_type->name == 'attachment')
+                                continue;
+                            ?>
+                            <label><input type="checkbox" name="objects_slide[]" value="<?php echo $post_type->name; ?>" <?php
+                                if (isset($pimorder_objects_slide) && is_array($pimorder_objects_slide)) {
+                                    if (in_array($post_type->name, $pimorder_objects_slide)) {
+                                        echo 'checked="checked"';
                                     }
-                                    ?>>&nbsp;<?php echo $taxonomy->label ?></label><br>
-                                    <?php
                                 }
-                                ?>
-                        </td>
-                    </tr>
+                                ?>>&nbsp;<?php echo $post_type->label; ?></label><br>
+                            <?php
+                        }
+                        ?>
+                    </td>
+                </tr>
                 </tbody>
             </table>
 
-        </div> 
+        </div>
+
+
         <p class="submit">
             <input type="submit" class="button-primary" name="pimorder_submit" value="<?php _e('Update', 'pimorder'); ?>">
         </p>

@@ -16,6 +16,7 @@ class PIM_Meta_Boxes {
 
         // Include the meta box classes
         $this->meta_boxes[] = include('PIM_Meta_Box_UploadForm.php');
+//        $this->meta_boxes[] = include('PIM_Meta_Box_UploadFormSlide.php');
 
 
 

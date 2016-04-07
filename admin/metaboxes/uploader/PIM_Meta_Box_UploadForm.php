@@ -15,6 +15,8 @@ class PIM_Meta_Box_ProjectFields{
     public $context;
     public $priority;
     public $post_types;
+    
+    private $upload_id;
 
     public function __construct()
     {
@@ -23,18 +25,16 @@ class PIM_Meta_Box_ProjectFields{
         $pimorder_objects = isset($pimorder_options['objects']) ? $pimorder_options['objects'] : array();
 
         $this->id = 'pim_project_fields';
-        $this->title = __('Project fields', 'pim');
+        $this->title = __('Images', 'pim');
         $this->context = 'normal';
         $this->priority = 'default';
         $this->post_types = $pimorder_objects;
 
+        $this->upload_id = "pim_images"; // this will be the name of form field. Image url(s) will be submitted in $_POST using this key. So if $id == ï¿½img1ï¿½ then $_POST[ï¿½img1ï¿½] will have all the image urls
+
         add_action('save_post', array($this, 'meta_box_save'), 10, 1);
 
         add_action( 'admin_enqueue_scripts', array( $this, 'styles_and_scripts' ) );
-
-        add_action('admin_head', array($this, 'pim_admin_head'));
-
-        add_action('wp_ajax_plupload_action', array($this, 'pim_plupload_action'));
     }
 
     /**
@@ -50,60 +50,17 @@ class PIM_Meta_Box_ProjectFields{
 
         wp_enqueue_script('plupload-all');
 
-        wp_register_script('myplupload', PIM_RESOURCES_URL.'js/myplupload.js', array('jquery'));
-        wp_enqueue_script('myplupload');
+
+        wp_register_script('pim_popupformjs', PIM_RESOURCES_URL.'js/popup-form.js', array('jquery'));
+        wp_enqueue_script('pim_popupformjs');
+
 
         wp_register_style('myplupload', PIM_RESOURCES_URL.'css/myplupload.css');
         wp_enqueue_style('myplupload');
     }
 
 
-
-    function pim_admin_head() {
-        // place js config array for plupload
-        $plupload_init = array(
-            'runtimes' => 'html5,silverlight,flash,html4',
-            'browse_button' => 'plupload-browse-button', // will be adjusted per uploader
-            'container' => 'plupload-upload-ui', // will be adjusted per uploader
-            'drop_element' => 'drag-drop-area', // will be adjusted per uploader
-            'file_data_name' => 'async-upload', // will be adjusted per uploader
-            'multiple_queues' => true,
-            'max_file_size' => wp_max_upload_size() . 'b',
-            'url' => admin_url('admin-ajax.php'),
-            'flash_swf_url' => includes_url('js/plupload/plupload.flash.swf'),
-            'silverlight_xap_url' => includes_url('js/plupload/plupload.silverlight.xap'),
-            'filters' => array(array('title' => __('Allowed Files'), 'extensions' => '*')),
-            'multipart' => true,
-            'urlstream_upload' => true,
-            'multi_selection' => false, // will be added per uploader
-            // additional post data to send to our ajax hook
-            'multipart_params' => array(
-                '_ajax_nonce' => "", // will be added per uploader
-                'action' => 'plupload_action', // the ajax action name
-                'imgid' => 0 // will be added per uploader
-            )
-        );
-        ?>
-        <script type="text/javascript">
-            var base_plupload_config=<?php echo json_encode($plupload_init); ?>;
-        </script>
-        <?php
-    }
-
-    function pim_plupload_action() {
-
-        // check ajax noonce
-        $imgid = $_POST["imgid"];
-        check_ajax_referer($imgid . 'pluploadan');
-
-        // handle file upload
-        $status = wp_handle_upload($_FILES[$imgid . 'async-upload'], array('test_form' => true, 'action' => 'plupload_action'));
-
-        // send the uploaded file url in response
-//        echo $status['url'];
-        echo json_encode($status);
-        exit;
-    }
+    
 
     public function meta_box_inner($post)
     {
@@ -113,8 +70,6 @@ class PIM_Meta_Box_ProjectFields{
 
         $attachments = PIM_Gallery::get_list($post_id, true);
 
-
-        $id = "pim_images"; // this will be the name of form field. Image url(s) will be submitted in $_POST using this key. So if $id == “img1” then $_POST[“img1”] will have all the image urls
 
         $svalue = ""; // this will be initial value of the above form field. Image urls.
 
@@ -128,34 +83,42 @@ class PIM_Meta_Box_ProjectFields{
 
         <script>
             jQuery(function() {
-                jQuery( "#sortable" ).sortable();
+                jQuery( "#sortable" ).sortable({
+                    change: function( event, ui ) {
+                        jQuery('.images_order').attr('name', 'images_order[]');
+                    }
+                });
                 jQuery( "#sortable" ).disableSelection();
             });
         </script>
         <div class="row">
             <label>Upload Images</label>
-            <input type="hidden" name="<?php echo $id; ?>" id="<?php echo $id; ?>" value="<?php echo $svalue; ?>" />
-            <input type="hidden" name="<?php echo $id; ?>_base" id="<?php echo $id; ?>_base" value="<?php echo $svalue; ?>" />
-            <div class="plupload-upload-uic hide-if-no-js <?php if ($multiple): ?>plupload-upload-uic-multiple<?php endif; ?>" id="<?php echo $id; ?>plupload-upload-ui">
-                <input id="<?php echo $id; ?>plupload-browse-button" type="button" value="<?php esc_attr_e('Select Files'); ?>" class="button" />
-                <span class="ajaxnonceplu" id="ajaxnonceplu<?php echo wp_create_nonce($id . 'pluploadan'); ?>"></span>
+            <?php wp_nonce_field('pim-form-save', 'pim-save-form-nonce'); ?>
+            <input type="hidden" name="<?php echo $this->upload_id; ?>" id="<?php echo $this->upload_id; ?>" value="<?php echo $svalue; ?>" class="img-id" />
+            <input type="hidden" name="<?php echo $this->upload_id; ?>_base" id="<?php echo $this->upload_id; ?>_base" value="<?php echo $svalue; ?>" class="img-id" />
+            <div class="plupload-upload-uic hide-if-no-js <?php if ($multiple): ?>plupload-upload-uic-multiple<?php endif; ?>" id="<?php echo $this->upload_id; ?>plupload-upload-ui">
+                <input id="<?php echo $this->upload_id; ?>plupload-browse-button" type="button" value="<?php esc_attr_e('Select Files'); ?>" class="button modal-upload-btn" />
+                <span class="ajaxnonceplu" id="ajaxnonceplu<?php echo wp_create_nonce($this->upload_id . 'pluploadan'); ?>"></span>
                 <?php if ($width && $height): ?>
                     <span class="plupload-resize"></span><span class="plupload-width" id="plupload-width<?php echo $width; ?>"></span>
                     <span class="plupload-height" id="plupload-height<?php echo $height; ?>"></span>
                 <?php endif; ?>
                 <div class="filelist"></div>
             </div>
-            <div class="images plupload-thumbs <?php if ($multiple): ?>plupload-thumbs-multiple<?php endif; ?>" id="<?php echo $id; ?>plupload-thumbs">
+            <div class="images plupload-thumbs <?php if ($multiple): ?>plupload-thumbs-multiple<?php endif; ?>" id="<?php echo $this->upload_id; ?>plupload-thumbs">
             </div>
             <div class="clear"></div>
             <div class="images plupload-attach" id="sortable">
-                <?php foreach($attachments as $id => $attachment): ?>
-                    <?php $url = wp_get_attachment_url( $id); ?>
-                    <div class="thumb" id="attachment_<?php echo $id; ?>">
+                <?php foreach($attachments as $upload_id => $attachment): ?>
+                    <?php $url = apply_filters('pim_image_url', $upload_id, 'thumbnail'); ?>
+                    <div class="thumb" id="attachment_<?php echo $upload_id; ?>">
                         <img src="<?php echo $url; ?>" alt="">
-                        <input type="hidden" name="images_order[]" id="images_order" value="<?php echo $id; ?>">
-                        <a href="#" data-attachment-remove="<?php echo $id; ?>" class="delete_attachment">
-                            Delete
+                        <input type="hidden" name="uploaded_img[]" class="images_order" value="<?php echo $upload_id; ?>">
+                        <a href="#" data-attachment-edit="<?php echo $upload_id; ?>" class="delete_attachment modal-edit-btn">
+                            <span class="dashicons dashicons-edit"></span>
+                        </a>
+                        <a href="#" data-attachment-remove="<?php echo $upload_id; ?>" class="delete_attachment modal-remove-btn" style="float: right;">
+                            <span class="dashicons dashicons-trash"></span>
                         </a>
                     </div>
                 <?php endforeach; ?>
@@ -176,76 +139,40 @@ class PIM_Meta_Box_ProjectFields{
                 $attachments = PIM_Gallery::get_list($post_id, true);
 
 
-                if(isset($_POST['pim_images_base']) && $_POST['pim_images_base'])
+                if (
+                    // nonce was submitted and is verified
+                    isset( $_POST['pim-save-form-nonce'] ) &&
+                    wp_verify_nonce( $_POST['pim-save-form-nonce'], 'pim-form-save' )
+
+                )
                 {
-                    $images = explode(',', $_POST['pim_images_base']);
+                    // see if image data was submitted:
+                    // sanitize the data and save it in the term_images array
+                    if ( ! empty( $_POST[$this->upload_id] ) ) {
+                        $images = $_POST[$this->upload_id];
 
-                    $i = 0;
-                    foreach ($images as $image_path) {
-                        $filetype = wp_check_filetype( basename( $image_path ), null );
-                        $wp_upload_dir = wp_upload_dir();
-
-                        $attachment = array(
-                            'guid'           => basename( $image_path ),
-                            'post_mime_type' => $filetype['type'],
-                            'post_title'     => preg_replace( '/\.[^.]+$/', '', basename( $image_path ) ),
-                            'post_content'   => 'pim_gallery',
-                            'post_status'    => 'inherit',
-                            'menu_order'     => $i++,
-                            'post_type'      => 'pim_image'
-                        );
-
-                        foreach( get_intermediate_image_sizes() as $s ) {
-                            $sizes[$s] = array( 'width' => '', 'height' => '', 'crop' => true );
-                            $sizes[$s]['width'] = get_option( "{$s}_size_w" ); // For default sizes set in options
-                            $sizes[$s]['height'] = get_option( "{$s}_size_h" ); // For default sizes set in options
-                            $sizes[$s]['crop'] = get_option( "{$s}_crop" ); // For default sizes set in options
+                        if(!empty($_POST['uploaded_img']))
+                        {
+                            $images .= implode(',', $_POST['uploaded_img']);
                         }
-
-                        $sizes = apply_filters( 'intermediate_image_sizes_advanced', $sizes );
-
-
-                        $attach_id = wp_insert_attachment( $attachment, $image_path, $post_id );
-                        $attach_data = wp_generate_attachment_metadata( $attach_id, $image_path );
-
-                        foreach( $sizes as $size => $size_data ) {
-                            $resized = image_make_intermediate_size( $image_path, $size_data['width'], $size_data['height'], $size_data['crop'] );
-                            if ( $resized )
-                                $attach_data['sizes'][$size] = $resized;
-                        }
-
-                        wp_update_attachment_metadata( $attach_id, $attach_data );
-
-                        wp_set_object_terms($attach_id, array('pim_image'), 'location');
+                        delete_post_meta($post_id, $this->upload_id);
+                        add_post_meta($post_id, $this->upload_id, json_encode($images), true);
                     }
-
                 }
+
+
                 if(isset($_POST['images_order']) && !empty($_POST['images_order']))
                 {
-                    global $wpdb;
+                    delete_post_meta($post_id, $this->upload_id);
+                    update_post_meta($post_id, $this->upload_id, json_encode(implode(',', $_POST['images_order'])));
+                }
 
-                    $id_arr = $_POST['images_order'];
-
-                    $delete_images = array_diff_key($attachments, array_flip($id_arr));
-
-
-                    foreach ($id_arr as $key => $id) {
-                        $wpdb->update($wpdb->posts, array('menu_order' => $key), array('ID' => intval($id)));
-                    }
-
-                    if(!empty($delete_images))
-                    {
-                        foreach($delete_images as $attachmentid => $post)
-                        {
-                            wp_delete_attachment( $attachmentid, 1 );
-                        }
-                    }
-                }else{
-
-                    foreach($attachments as $attachmentid => $post)
-                    {
-                        wp_delete_attachment( $attachmentid, 1 );
-                    }
+                if(!isset($_POST['images_order']) &&
+                    !isset($_POST['uploaded_img']) &&
+                    empty( $_POST[$this->upload_id])
+                )
+                {
+                    delete_post_meta($post_id, $this->upload_id);
                 }
 
             }

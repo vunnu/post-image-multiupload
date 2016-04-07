@@ -82,6 +82,7 @@ class PIM_Admin_Functions{
 
         $input_options = array();
         $input_options['objects'] = isset($_POST['objects']) ? $_POST['objects'] : '';
+        $input_options['objects_slide'] = isset($_POST['objects_slide']) ? $_POST['objects_slide'] : '';
         $input_options['tags'] = isset($_POST['tags']) ? $_POST['tags'] : '';
 
         update_option('pimorder_options', $input_options);

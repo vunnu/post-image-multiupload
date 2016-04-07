@@ -119,7 +119,7 @@ function plu_show_thumbs(imgId) {
     for (var i = 0; i < images.length; i++) {
         if (images[i]) {
             var thumb = $('<div class="thumb" id="thumb' + imgId + i + '"><img src="' + images[i] + '" alt="" /><div class="thumbi"><a id="thumbremovelink' + imgId + i + '" href="#">Remove</a></div> <div class="clear"></div></div>');
-            thumbsC.append(thumb);
+            //thumbsC.append(thumb);
             thumb.find("a").click(function() {
                 var ki = $(this).attr("id").replace("thumbremovelink" + imgId, "");
                 ki = parseInt(ki);

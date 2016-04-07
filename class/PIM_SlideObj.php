@@ -7,7 +7,7 @@
  */
 
 
-class PIM_Gallery extends PIM_Base
+class PIM_SlideObj extends PIM_Base
 {
 
 
@@ -15,7 +15,9 @@ class PIM_Gallery extends PIM_Base
 
     public $post;
 
-    static $post_type = 'attachment';
+    static $post_type = 'pim_slide_obj';
+
+    protected $gallery_id;
 
 
 
@@ -82,16 +84,8 @@ class PIM_Gallery extends PIM_Base
 
         $images = array_filter($arr_img);
 
-        return self::getImageAttachments($images, $key_to_ids, $to_object);
-    }
-
-
-
-    public static function getImageAttachments($images, $key_to_ids = false, $to_object = false)
-    {
         if(empty($images))
             return array();
-
 
         $args = array(
             'post_type' => self::$post_type,
@@ -102,6 +96,7 @@ class PIM_Gallery extends PIM_Base
             'order'         => 'ASC',
 
         );
+
 
 
         $posts = get_posts($args);
@@ -129,6 +124,7 @@ class PIM_Gallery extends PIM_Base
 
 
 
+
     /**
      * Getting current class post_type
      */
@@ -138,4 +134,4 @@ class PIM_Gallery extends PIM_Base
     }
 }
 
-return PIM_Gallery::getInstance();
+return PIM_SlideObj::getInstance();

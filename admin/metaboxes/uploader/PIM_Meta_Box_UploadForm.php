@@ -94,6 +94,7 @@ class PIM_Meta_Box_ProjectFields{
         <div class="row">
             <label>Upload Images</label>
             <?php wp_nonce_field('pim-form-save', 'pim-save-form-nonce'); ?>
+            <input type="hidden"  id="<?php echo 'pim_upload_id'; ?>" value="<?php echo $this->upload_id; ?>" class="img-id" />
             <input type="hidden" name="<?php echo $this->upload_id; ?>" id="<?php echo $this->upload_id; ?>" value="<?php echo $svalue; ?>" class="img-id" />
             <input type="hidden" name="<?php echo $this->upload_id; ?>_base" id="<?php echo $this->upload_id; ?>_base" value="<?php echo $svalue; ?>" class="img-id" />
             <div class="plupload-upload-uic hide-if-no-js <?php if ($multiple): ?>plupload-upload-uic-multiple<?php endif; ?>" id="<?php echo $this->upload_id; ?>plupload-upload-ui">

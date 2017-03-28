@@ -15,7 +15,7 @@ class PIM_Meta_Box_ProjectFields{
     public $context;
     public $priority;
     public $post_types;
-    
+
     private $upload_id;
 
     public function __construct()
@@ -60,7 +60,7 @@ class PIM_Meta_Box_ProjectFields{
     }
 
 
-    
+
 
     public function meta_box_inner($post)
     {
@@ -68,7 +68,7 @@ class PIM_Meta_Box_ProjectFields{
 
         $post_id = $post->ID;
 
-        $attachments = PIM_Gallery::get_list($post_id, true);
+        $attachments = PIM_Gallery::get_list($post_id, 'pim_images', true);
 
 
         $svalue = ""; // this will be initial value of the above form field. Image urls.
@@ -137,7 +137,7 @@ class PIM_Meta_Box_ProjectFields{
 
             if(!isset($_POST['_inline_edit']))
             {
-                $attachments = PIM_Gallery::get_list($post_id, true);
+                $attachments = PIM_Gallery::get_list($post_id, 'pim_images', true);
 
 
                 if (
